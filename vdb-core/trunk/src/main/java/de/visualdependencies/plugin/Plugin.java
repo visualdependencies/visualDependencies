@@ -1,5 +1,13 @@
 package de.visualdependencies.plugin;
 
+/**
+ * A common plugin.
+ * 
+ * This object is a common plugin in the system. It is recommended to use a more concrete type, meaning a subtype of
+ * Plugin.
+ * 
+ * @author Jan Philipp
+ */
 public interface Plugin {
 
 	/**
