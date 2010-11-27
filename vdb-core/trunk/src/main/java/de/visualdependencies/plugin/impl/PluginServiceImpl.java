@@ -35,6 +35,9 @@ public class PluginServiceImpl implements PluginService {
 	 */
 	@Override
 	public <T extends Plugin> Map<String, T> getPluginsAsMap(@NonNull final Class<T> pluginType) {
+
+		Assert.notNull(pluginType, "The plugin type must not be null.");
+
 		return applicationContext.getBeansOfType(pluginType);
 	}
 
