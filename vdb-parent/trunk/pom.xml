@@ -8,6 +8,7 @@
 	<packaging>pom</packaging>
 	<description>visualize dependencies of your database</description>
 	<url>http://www.visualdependencies.de</url>
+	<inceptionYear>2009</inceptionYear>
 
 	<properties>
 		<sourceEnconding>UTF-8</sourceEnconding>
@@ -17,16 +18,11 @@
 		<jdk.version>1.6</jdk.version>
 	</properties>
 	
-	<modules>
-		<module>core</module>
-		<module>common-plugins</module>
-	</modules>
-
 	<issueManagement>
 		<system>Google Code Issue Tracking</system>
 		<url>http://code.google.com/p/visualdependencies/issues/list</url>
 	</issueManagement>
-	<inceptionYear>2009</inceptionYear>
+	
 	<repositories>
 		<repository>
 			<id>central</id>
