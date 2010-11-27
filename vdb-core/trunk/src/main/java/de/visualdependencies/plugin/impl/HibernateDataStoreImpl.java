@@ -11,11 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import de.visualdependencies.data.dao.SchemaColumnDao;
 import de.visualdependencies.data.dao.SchemaConnectionDao;
+import de.visualdependencies.data.dao.SchemaDao;
 import de.visualdependencies.data.dao.SchemaFunctionDao;
 import de.visualdependencies.data.dao.SchemaProcedureDao;
 import de.visualdependencies.data.dao.SchemaTableDao;
 import de.visualdependencies.data.dao.SchemaTriggerDao;
 import de.visualdependencies.data.dao.SchemaViewDao;
+import de.visualdependencies.data.entity.Schema;
 import de.visualdependencies.data.entity.SchemaColumn;
 import de.visualdependencies.data.entity.SchemaConnection;
 import de.visualdependencies.data.entity.SchemaFunction;
@@ -29,6 +31,9 @@ import de.visualdependencies.plugin.Plugin;
 @Service
 @Transactional(propagation = Propagation.SUPPORTS)
 public class HibernateDataStoreImpl implements DataStore {
+
+	@Autowired
+	private SchemaDao schemaDao;
 
 	@Autowired
 	private SchemaColumnDao columnDao;
@@ -50,6 +55,11 @@ public class HibernateDataStoreImpl implements DataStore {
 
 	@Autowired
 	private SchemaFunctionDao functionDao;
+
+	@Override
+	public Schema createSchema() {
+		return schemaDao.create();
+	}
 
 	@Override
 	public SchemaColumn createSchemaColumn() {
@@ -87,8 +97,8 @@ public class HibernateDataStoreImpl implements DataStore {
 	}
 
 	@Override
-	public List<SchemaConnection> getAllConnections() {
-		return connectionDao.list();
+	public List<Schema> getAllSchemas() {
+		return schemaDao.list();
 	}
 
 	@PostConstruct
@@ -97,6 +107,12 @@ public class HibernateDataStoreImpl implements DataStore {
 	@Override
 	public boolean isCompatible(final Plugin otherPlugin) {
 		return false;
+	}
+
+	@Override
+	public boolean saveSchema(final Schema schema) {
+		schemaDao.save(schema);
+		return true;
 	}
 
 	@Override

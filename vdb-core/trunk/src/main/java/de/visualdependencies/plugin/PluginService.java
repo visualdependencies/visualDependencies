@@ -3,6 +3,8 @@ package de.visualdependencies.plugin;
 import java.util.Collection;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 public interface PluginService {
 
 	/**
@@ -12,7 +14,7 @@ public interface PluginService {
 	 * @param pluginType
 	 * @return
 	 */
-	<T extends Plugin> Collection<T> getPlugins(Class<T> pluginType);
+	<T extends Plugin> Collection<T> getPlugins(@NonNull Class<T> pluginType);
 
 	/**
 	 * Returns the map of plugins which are instances of the specified plugin type. This method will return always a
@@ -21,6 +23,6 @@ public interface PluginService {
 	 * @param pluginType
 	 * @return
 	 */
-	<T extends Plugin> Map<String, T> getPluginsAsMap(Class<T> pluginType);
+	<T extends Plugin> Map<String, T> getPluginsAsMap(@NonNull Class<T> pluginType);
 
 }

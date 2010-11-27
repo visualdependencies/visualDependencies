@@ -3,15 +3,16 @@ package de.visualdependencies.plugin;
 import java.sql.Connection;
 
 import de.visualdependencies.data.entity.SchemaConnection;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 public interface ConnectionProvider extends Plugin {
 
 	void closeConnection(Connection connection);
 
-	Connection createConnection(SchemaConnection schemaConnection);
+	Connection createConnection(@NonNull SchemaConnection schemaConnection);
 
 	void initializeDriver() throws IllegalStateException;
 
-	boolean testConnection(SchemaConnection schemaConnection);
+	boolean testConnection(@NonNull SchemaConnection schemaConnection);
 
 }

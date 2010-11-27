@@ -1,14 +1,9 @@
 package de.visualdependencies.plugin.oracle.impl;
 
-import java.sql.Connection;
-
 import org.springframework.stereotype.Component;
 
-import de.visualdependencies.data.entity.SchemaConnection;
-import de.visualdependencies.data.entity.SchemaTable;
-import de.visualdependencies.plugin.ConnectionProvider;
-import de.visualdependencies.plugin.DataStore;
 import de.visualdependencies.plugin.MetadataWorker;
+import de.visualdependencies.plugin.Plugin;
 import de.visualdependencies.plugin.helper.MetadataWorkerParameters;
 import de.visualdependencies.plugin.helper.MetadataWorkerResult;
 
@@ -16,25 +11,24 @@ import de.visualdependencies.plugin.helper.MetadataWorkerResult;
 public class OracleMetadataWorkerImpl extends AbstractOraclePluginImpl implements MetadataWorker {
 
 	@Override
+	public boolean isCompatible(Plugin otherPlugin) {
+		if (otherPlugin instanceof de.visualdependencies.plugin.common.impl.CommonConnectionProviderImpl) { return true; }
+		return super.isCompatible(otherPlugin);
+	}
+
+	@Override
 	public MetadataWorkerResult loadModel(MetadataWorkerParameters parameters) {
 
+		// Create the result object. Both parameters and result live in this call.
 		MetadataWorkerResult result = MetadataWorkerResult.create();
+		result.markStart();
 
-		ConnectionProvider connectionProvider = parameters.getConnectionProvider();
-		SchemaConnection schemaConnection = parameters.getSchemaConnection();
-		DataStore dataStore = parameters.getDataStore();
+		// DEMO 1s.
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {}
 
-		// Create a real JDBC connection.
-		Connection connection = connectionProvider.createConnection(schemaConnection);
-		parameters.setConnection(connection);
-
-		// DEMO
-		SchemaTable schemaTable = dataStore.createSchemaTable();
-		schemaTable.setName("TEST1");
-		schemaTable.getData().put("oracle:test", "123");
-		dataStore.saveSchemaTable(schemaTable);
-		schemaConnection.getTables().add(schemaTable);
-		dataStore.saveSchemaConnection(schemaConnection);
+		result.markEnd();
 
 		return result;
 	}

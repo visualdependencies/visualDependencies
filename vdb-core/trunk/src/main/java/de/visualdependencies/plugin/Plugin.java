@@ -1,5 +1,7 @@
 package de.visualdependencies.plugin;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * A common plugin.
  * 
@@ -17,5 +19,5 @@ public interface Plugin {
 	 * @param otherPlugin
 	 * @return
 	 */
-	boolean isCompatible(Plugin otherPlugin);
+	boolean isCompatible(@NonNull Plugin otherPlugin);
 }
