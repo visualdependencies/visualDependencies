@@ -13,12 +13,18 @@ import de.visualdependencies.plugin.util.AbstractDataTranslator;
  */
 public class CommonConnectionDataTranslator extends AbstractDataTranslator {
 
+	private static final String URL = "url";
+
 	protected CommonConnectionDataTranslator(SchemaConnection schemaConnection) {
 		super(schemaConnection.getData());
 	}
 
 	public String getUrl() {
-		return getString("url");
+		return getString(URL);
+	}
+
+	public void setUrl(String value) {
+		set(URL, value);
 	}
 
 	public static CommonConnectionDataTranslator create(SchemaConnection schemaConnection) {
