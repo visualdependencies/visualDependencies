@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.visualdependencies</groupId>
-	<artifactId>mysql-plugin</artifactId>
+	<artifactId>vdb-mysql-plugin</artifactId>
 	<name>visualDependencies MySQL Plugin</name>
 	<version>1.0.0-SNAPSHOT</version>
 	<parent>
 		<groupId>de.visualdependencies</groupId>
-		<artifactId>parent</artifactId>
+		<artifactId>vdb-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../parent/pom.xml</relativePath>
 	</parent>
@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>de.visualdependencies</groupId>
-			<artifactId>common-plugins</artifactId>
+			<artifactId>vdb-common-plugins</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
