@@ -25,4 +25,14 @@ public interface PluginService {
 	 */
 	<T extends Plugin> Map<String, T> getPluginsAsMap(@NonNull Class<T> pluginType);
 
+	<T extends Plugin> T resolvePlugin(@NonNull String name, @NonNull Class<T> pluginType);
+
+	/**
+	 * Returns the context bean name of the given plugin.
+	 * 
+	 * @param plugin
+	 * @return
+	 */
+	String resolvePluginName(Plugin plugin);
+
 }

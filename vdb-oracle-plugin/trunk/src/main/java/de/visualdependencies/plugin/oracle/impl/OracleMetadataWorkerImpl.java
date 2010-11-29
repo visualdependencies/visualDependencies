@@ -12,6 +12,7 @@ public class OracleMetadataWorkerImpl extends AbstractOraclePluginImpl implement
 
 	@Override
 	public boolean isCompatible(Plugin otherPlugin) {
+		// Accept the common connection provider plugin.
 		if (otherPlugin instanceof de.visualdependencies.plugin.common.impl.CommonConnectionProviderImpl) { return true; }
 		return super.isCompatible(otherPlugin);
 	}

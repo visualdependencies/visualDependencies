@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import de.visualdependencies.data.entity.SchemaConnection;
-import de.visualdependencies.plugin.DefaultConnectionProviderImpl;
-import de.visualdependencies.plugin.mysql.util.MySqlConnectionDataTranslator;
+import de.visualdependencies.plugin.impl.DefaultConnectionProviderImpl;
+import de.visualdependencies.util.translator.ConnectionDataTranslator;
 
 @Component("MySQL Connection Provider")
 public class MySqlConnectionProviderImpl extends DefaultConnectionProviderImpl {
@@ -21,15 +21,15 @@ public class MySqlConnectionProviderImpl extends DefaultConnectionProviderImpl {
 
 	protected Connection buildConnection(SchemaConnection schemaConnection) throws SQLException {
 
-		MySqlConnectionDataTranslator translator = MySqlConnectionDataTranslator.create(schemaConnection);
+		ConnectionDataTranslator translator = ConnectionDataTranslator.create(schemaConnection);
 
 		String url = translator.getUrl();
-		Assert.hasText(url, "The specified schema connection has no url set.");
+		Assert.hasText(url, "The specified schema connection has no url.");
 
 		Driver driver = buildDriver();
 		Connection connection = driver.connect(url, new Properties());
 
-		Assert.notNull(connection, "The jdbc connection could not created.");
+		Assert.notNull(connection, "The jdbc connection could not be created.");
 
 		return connection;
 	}
