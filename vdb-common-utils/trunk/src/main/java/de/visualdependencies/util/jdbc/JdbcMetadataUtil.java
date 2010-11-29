@@ -23,8 +23,8 @@ final public class JdbcMetadataUtil {
 	/**
 	 * Creates a new jdbc metadata utility instance.
 	 * 
-	 *  Note: This constructor checks if the following objects are available: connection, data store and schema.
-	 *  
+	 * Note: This constructor checks if the following objects are available: connection, data store and schema.
+	 * 
 	 * @param parameters
 	 * @return
 	 */
@@ -51,7 +51,7 @@ final public class JdbcMetadataUtil {
 		table.setName(rs.getString("TABLE_NAME"));
 
 		if (logger.isInfoEnabled()) {
-			logger.info("Table built: " + table.getName());
+			logger.info("Table has been built: " + table.getName());
 		}
 
 		return table;
@@ -62,12 +62,17 @@ final public class JdbcMetadataUtil {
 		view.setName(rs.getString("TABLE_NAME"));
 
 		if (logger.isInfoEnabled()) {
-			logger.info("View built: " + view.getName());
+			logger.info("View has been built: " + view.getName());
 		}
 
 		return view;
 	}
 
+	/**
+	 * Loads all tables and views of the specified connection. All objects are stored in the schema.
+	 * 
+	 * This implementation uses {@link DatabaseMetaData#getTables(String, String, String, String[])}.
+	 */
 	public void loadTables() {
 
 		final Schema schema = parameters.getSchema();
