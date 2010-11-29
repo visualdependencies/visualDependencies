@@ -20,6 +20,14 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 final public class JdbcMetadataUtil {
 
+	/**
+	 * Creates a new jdbc metadata utility instance.
+	 * 
+	 *  Note: This constructor checks if the following objects are available: connection, data store and schema.
+	 *  
+	 * @param parameters
+	 * @return
+	 */
 	public static JdbcMetadataUtil createInstance(@NonNull final MetadataWorkerParameters parameters) {
 
 		Assert.notNull(parameters, "The metadata worker parameters must be set.");
