@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import de.visualdependencies.data.entity.SchemaConnection;
-import de.visualdependencies.plugin.DefaultConnectionProviderImpl;
+import de.visualdependencies.plugin.impl.DefaultConnectionProviderImpl;
 
 @Component("Oracle Connection Provider")
 public class OracleConnectionProviderImpl extends DefaultConnectionProviderImpl {
@@ -18,9 +18,9 @@ public class OracleConnectionProviderImpl extends DefaultConnectionProviderImpl 
 
 	public void initializeDriver() throws IllegalStateException {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.oracle");
 		} catch (ClassNotFoundException e) {
-			Assert.state(false, "No compatible MySQL driver found in classpath.");
+			Assert.state(false, "No compatible Oracle driver found in classpath.");
 		}
 	}
 

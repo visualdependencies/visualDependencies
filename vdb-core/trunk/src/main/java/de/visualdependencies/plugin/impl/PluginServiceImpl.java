@@ -41,4 +41,18 @@ public class PluginServiceImpl implements PluginService {
 		return applicationContext.getBeansOfType(pluginType);
 	}
 
+	@Override
+	public <T extends Plugin> T resolvePlugin(final String name, final Class<T> pluginType) {
+		return applicationContext.getBean(name, pluginType);
+	}
+
+	@Override
+	public String resolvePluginName(final Plugin plugin) {
+		final Map<String, ? extends Plugin> plugins = getPluginsAsMap(plugin.getClass());
+		for (final Map.Entry<String, ? extends Plugin> entry : plugins.entrySet()) {
+			if (entry.getValue() == plugin) { return entry.getKey(); }
+		}
+		return null;
+	}
+
 }

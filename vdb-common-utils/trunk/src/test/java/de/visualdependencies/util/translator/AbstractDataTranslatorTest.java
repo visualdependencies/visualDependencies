@@ -1,4 +1,4 @@
-package de.visualdependencies.plugin.util;
+package de.visualdependencies.util.translator;
 
 import java.util.Calendar;
 import java.util.Date;

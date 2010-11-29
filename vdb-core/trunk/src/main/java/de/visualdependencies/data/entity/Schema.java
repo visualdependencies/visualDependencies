@@ -16,6 +16,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 @Entity
 @Table(name = "schema")
 public class Schema extends AbstractEntity<Long> {
@@ -39,18 +42,23 @@ public class Schema extends AbstractEntity<Long> {
 	private SchemaConnection connection;
 
 	@OneToMany
+	@Cascade(CascadeType.ALL)
 	private List<SchemaTable> tables;
 
 	@OneToMany
+	@Cascade(CascadeType.ALL)
 	private List<SchemaView> views;
 
 	@OneToMany
+	@Cascade(CascadeType.ALL)
 	private List<SchemaTrigger> triggers;
 
 	@OneToMany
+	@Cascade(CascadeType.ALL)
 	private List<SchemaFunction> functions;
 
 	@OneToMany
+	@Cascade(CascadeType.ALL)
 	private List<SchemaProcedure> procedures;
 
 	public SchemaConnection getConnection() {

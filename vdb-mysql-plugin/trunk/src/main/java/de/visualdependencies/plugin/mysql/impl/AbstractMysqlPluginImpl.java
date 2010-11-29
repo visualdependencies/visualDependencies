@@ -4,7 +4,12 @@ import de.visualdependencies.plugin.Plugin;
 import de.visualdependencies.plugin.impl.AbstractPluginImpl;
 import de.visualdependencies.plugin.mysql.MysqlPlugin;
 
-public class AbstractMysqlPluginImpl extends AbstractPluginImpl implements MysqlPlugin {
+/**
+ * Abstract base implementation of a {@link MysqlPlugin}.
+ * 
+ * @author Jan Philipp
+ */
+public abstract class AbstractMysqlPluginImpl extends AbstractPluginImpl implements MysqlPlugin {
 
 	public boolean isCompatible(Plugin otherPlugin) {
 		if (otherPlugin instanceof MysqlPlugin) { return true; }

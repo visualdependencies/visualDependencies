@@ -1,5 +1,6 @@
 package de.visualdependencies.data.entity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 @Entity
 @Table(name = "views")
 public class SchemaView extends AbstractEntity<Long> {
@@ -29,6 +33,7 @@ public class SchemaView extends AbstractEntity<Long> {
 	private String name;
 
 	@OneToMany(fetch = FetchType.EAGER)
+	@Cascade(CascadeType.ALL)
 	private List<SchemaColumn> columns;
 
 	@ElementCollection
@@ -38,6 +43,9 @@ public class SchemaView extends AbstractEntity<Long> {
 	private Map<String, String> data;
 
 	public List<SchemaColumn> getColumns() {
+		if (columns == null) {
+			setColumns(new ArrayList<SchemaColumn>());
+		}
 		return columns;
 	}
 
