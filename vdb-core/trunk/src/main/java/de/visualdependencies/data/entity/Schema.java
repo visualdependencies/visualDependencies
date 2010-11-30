@@ -47,6 +47,10 @@ public class Schema extends AbstractEntity<Long> {
 
 	@OneToMany
 	@Cascade(CascadeType.ALL)
+	private List<TableTriggerDependency> tableTriggerDependencies;
+
+	@OneToMany
+	@Cascade(CascadeType.ALL)
 	private List<SchemaView> views;
 
 	@OneToMany
@@ -101,6 +105,13 @@ public class Schema extends AbstractEntity<Long> {
 		return tables;
 	}
 
+	public List<TableTriggerDependency> getTableTriggerDependencies() {
+		if (tableTriggerDependencies == null) {
+			setTableTriggerDependencies(new ArrayList<TableTriggerDependency>());
+		}
+		return tableTriggerDependencies;
+	}
+
 	public List<SchemaTrigger> getTriggers() {
 		if (triggers == null) {
 			setTriggers(new ArrayList<SchemaTrigger>());
@@ -141,6 +152,10 @@ public class Schema extends AbstractEntity<Long> {
 
 	public void setTables(final List<SchemaTable> tables) {
 		this.tables = tables;
+	}
+
+	public void setTableTriggerDependencies(final List<TableTriggerDependency> tableTriggerDependencies) {
+		this.tableTriggerDependencies = tableTriggerDependencies;
 	}
 
 	public void setTriggers(final List<SchemaTrigger> triggers) {

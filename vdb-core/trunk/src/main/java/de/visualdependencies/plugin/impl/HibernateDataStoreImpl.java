@@ -17,6 +17,7 @@ import de.visualdependencies.data.dao.SchemaProcedureDao;
 import de.visualdependencies.data.dao.SchemaTableDao;
 import de.visualdependencies.data.dao.SchemaTriggerDao;
 import de.visualdependencies.data.dao.SchemaViewDao;
+import de.visualdependencies.data.dao.TableTriggerDependencyDao;
 import de.visualdependencies.data.entity.Schema;
 import de.visualdependencies.data.entity.SchemaColumn;
 import de.visualdependencies.data.entity.SchemaConnection;
@@ -25,6 +26,7 @@ import de.visualdependencies.data.entity.SchemaProcedure;
 import de.visualdependencies.data.entity.SchemaTable;
 import de.visualdependencies.data.entity.SchemaTrigger;
 import de.visualdependencies.data.entity.SchemaView;
+import de.visualdependencies.data.entity.TableTriggerDependency;
 import de.visualdependencies.plugin.DataStore;
 import de.visualdependencies.plugin.Plugin;
 
@@ -43,6 +45,9 @@ public class HibernateDataStoreImpl implements DataStore {
 
 	@Autowired
 	private SchemaTableDao tableDao;
+
+	@Autowired
+	private TableTriggerDependencyDao tableTriggerDependencyDao;
 
 	@Autowired
 	private SchemaViewDao viewDao;
@@ -94,6 +99,11 @@ public class HibernateDataStoreImpl implements DataStore {
 	@Override
 	public SchemaView createSchemaView() {
 		return viewDao.create();
+	}
+
+	@Override
+	public TableTriggerDependency createTableTriggerDependency() {
+		return tableTriggerDependencyDao.create();
 	}
 
 	@Override

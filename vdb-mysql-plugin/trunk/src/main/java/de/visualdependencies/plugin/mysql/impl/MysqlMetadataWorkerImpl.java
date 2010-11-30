@@ -13,6 +13,7 @@ import de.visualdependencies.plugin.MetadataWorker;
 import de.visualdependencies.plugin.Plugin;
 import de.visualdependencies.plugin.helper.MetadataWorkerParameters;
 import de.visualdependencies.plugin.helper.MetadataWorkerResult;
+import de.visualdependencies.plugin.mysql.util.MySqlJdbcMetadataUtil;
 import de.visualdependencies.util.jdbc.JdbcMetadataUtil;
 
 @Component("MySQL Metadata Worker")
@@ -45,9 +46,12 @@ public class MysqlMetadataWorkerImpl extends AbstractMysqlPluginImpl implements 
 		parameters.setConnection(connection);
 
 		JdbcMetadataUtil jdbcMetadataUtil = JdbcMetadataUtil.createInstance(parameters);
+		MySqlJdbcMetadataUtil mysqlJdbcMetadataUtil = MySqlJdbcMetadataUtil.createInstance(parameters);
 
 		jdbcMetadataUtil.loadTables();
 		jdbcMetadataUtil.loadColumns();
+		mysqlJdbcMetadataUtil.loadTriggers();
+		mysqlJdbcMetadataUtil.loadTableTriggerDependencies();
 
 		dataStore.saveSchema(schema);
 

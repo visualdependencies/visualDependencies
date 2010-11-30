@@ -1,20 +1,27 @@
 package de.visualdependencies.plugin.mysql.util;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
 
 import de.visualdependencies.data.entity.Schema;
+import de.visualdependencies.data.entity.SchemaTable;
 import de.visualdependencies.data.entity.SchemaTrigger;
+import de.visualdependencies.data.entity.SchemaView;
+import de.visualdependencies.data.entity.TableTriggerDependency;
 import de.visualdependencies.plugin.DataStore;
 import de.visualdependencies.plugin.helper.MetadataWorkerParameters;
 import de.visualdependencies.util.translator.ConnectionDataTranslator;
+import de.visualdependencies.util.translator.TableTriggerDependencyDataTranslator;
 import de.visualdependencies.util.translator.TriggerDataTranslator;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -22,7 +29,9 @@ public class MySqlJdbcMetadataUtil {
 
 	private static final String SQL_STATEMENT = "action_statement";
 
-	private static final String TRIGGER_SQL = "SELECT trigger_name, event_manipulation, definer, event_object_table, action_statement, action_timing FROM information_schema.triggers WHERE trigger_schema = '%s'";
+	private static final String TRIGGER_SQL = "SELECT trigger_name, event_manipulation, definer, event_object_table, action_statement, action_timing FROM information_schema.triggers WHERE trigger_schema = ?";
+
+	private static final String TABLE_TRIGGER_SQL = "SHOW TRIGGERS";
 
 	private static final String JDBC_TRIGGER_NAME = "trigger_name";
 
@@ -89,7 +98,7 @@ public class MySqlJdbcMetadataUtil {
 			}
 
 			pstm = connection.prepareStatement(TRIGGER_SQL);
-			pstm.setString(0, catalog);
+			pstm.setString(1, catalog);
 			rs = pstm.executeQuery();
 
 			while (rs.next()) {
@@ -112,6 +121,84 @@ public class MySqlJdbcMetadataUtil {
 			logger.error("#loadTriggers could not be finished.", e);
 		} finally {
 			JdbcUtils.closeResultSet(rs);
+			JdbcUtils.closeStatement(pstm);
 		}
+	}
+
+	public void loadTableTriggerDependencies() {
+
+		final Schema schema = parameters.getSchema();
+		final Connection connection = parameters.getConnection();
+		final DataStore dataStore = parameters.getDataStore();
+
+		List<TableTriggerDependency> dependencies = schema.getTableTriggerDependencies();
+
+		// Create shortcut cache
+		Map<String, SchemaTable> tables = new HashMap<String, SchemaTable>();
+		for (SchemaTable table : schema.getTables()) {
+			tables.put(table.getName(), table);
+		}
+
+		Map<String, SchemaView> views = new HashMap<String, SchemaView>();
+		for (SchemaView view : schema.getViews()) {
+			views.put(view.getName(), view);
+		}
+
+		Map<String, SchemaTrigger> triggers = new HashMap<String, SchemaTrigger>();
+		for (SchemaTrigger trigger : schema.getTriggers()) {
+			triggers.put(trigger.getName(), trigger);
+		}
+
+		CallableStatement cstm = null;
+		ResultSet rs = null;
+
+		try {
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("Loading MySQL.Show_triggers..."));
+			}
+
+			cstm = connection.prepareCall(TABLE_TRIGGER_SQL);
+			rs = cstm.executeQuery();
+
+			while (rs.next()) {
+				/**
+				 * From the SHOW_TRIGGERS javadoc:
+				 * 
+				 */
+				dependencies.add(buildTableTriggerDependency(rs, dataStore, tables, views, triggers));
+			}
+
+			logger.info("#loadTriggers has finished.");
+
+		} catch (final SQLException e) {
+			logger.error("#loadTriggers could not be finished.", e);
+		} finally {
+			JdbcUtils.closeResultSet(rs);
+			JdbcUtils.closeStatement(cstm);
+		}
+	}
+
+	protected TableTriggerDependency buildTableTriggerDependency(ResultSet rs, DataStore dataStore,
+	        Map<String, SchemaTable> tables, Map<String, SchemaView> views, Map<String, SchemaTrigger> triggers)
+	        throws SQLException {
+		TableTriggerDependency dependency = dataStore.createTableTriggerDependency();
+		String triggerName = rs.getString("Trigger");
+		String tableName = rs.getString("Table");
+		dependency.setName(triggerName);
+
+		SchemaTable table = tables.get(tableName);
+		SchemaTrigger trigger = triggers.get(triggerName);
+		dependency.setTable(table);
+		dependency.setTrigger(trigger);
+
+		TableTriggerDependencyDataTranslator translator = TableTriggerDependencyDataTranslator.create(dependency);
+		translator.setStatement(rs.getString("Statement"));
+		translator.setEvent(rs.getString("Event"));
+
+		if (logger.isInfoEnabled()) {
+			logger.info("TableTriggerDependency has been built: " + dependency.getName());
+		}
+
+		return dependency;
 	}
 }
