@@ -10,6 +10,7 @@ import de.visualdependencies.data.entity.SchemaProcedure;
 import de.visualdependencies.data.entity.SchemaTable;
 import de.visualdependencies.data.entity.SchemaTrigger;
 import de.visualdependencies.data.entity.SchemaView;
+import de.visualdependencies.data.entity.TableTriggerDependency;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 public interface DataStore extends Plugin {
@@ -29,6 +30,8 @@ public interface DataStore extends Plugin {
 	SchemaTrigger createSchemaTrigger();
 
 	SchemaView createSchemaView();
+
+	TableTriggerDependency createTableTriggerDependency();
 
 	/**
 	 * Returns all available schemas.
