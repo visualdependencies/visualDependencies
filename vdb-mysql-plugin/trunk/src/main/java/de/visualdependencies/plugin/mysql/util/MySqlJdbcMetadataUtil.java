@@ -56,14 +56,15 @@ public class MySqlJdbcMetadataUtil {
 		Assert.notNull(parameters.getConnection(), "The metadata worker parameters must have a connection.");
 		Assert.notNull(parameters.getDataStore(), "The metadata worker parameters must have a datastore.");
 		Assert.notNull(parameters.getSchema(), "The metadata worker parameters must have a schema.");
-		Assert.notNull(parameters.getSchema().getConnection(),
+		Assert.notNull(parameters.getSchemaConnection(),
 		        "The metadata worker parameters must have a valid schema connection.");
 
 		return new MySqlJdbcMetadataUtil(parameters);
 	}
 
-	protected SchemaTrigger buildSchemaTrigger(final ResultSet rs, final DataStore dataStore) throws SQLException {
-		final SchemaTrigger trigger = dataStore.createSchemaTrigger();
+	protected SchemaTrigger buildSchemaTrigger(final ResultSet rs, final DataStore dataStore, Schema schema)
+	        throws SQLException {
+		final SchemaTrigger trigger = dataStore.createSchemaTrigger(schema);
 		trigger.setName(rs.getString(JDBC_TRIGGER_NAME));
 		TriggerDataTranslator translator = TriggerDataTranslator.create(trigger);
 		translator.setSqlDefinition(rs.getString(SQL_STATEMENT));
@@ -77,7 +78,7 @@ public class MySqlJdbcMetadataUtil {
 
 	private MySqlJdbcMetadataUtil(final MetadataWorkerParameters parameters) {
 		this.parameters = parameters;
-		connectionDataTranslator = ConnectionDataTranslator.create(parameters.getSchema().getConnection());
+		connectionDataTranslator = ConnectionDataTranslator.create(parameters.getSchemaConnection());
 	}
 
 	public void loadTriggers() {
@@ -85,8 +86,6 @@ public class MySqlJdbcMetadataUtil {
 		final Schema schema = parameters.getSchema();
 		final Connection connection = parameters.getConnection();
 		final DataStore dataStore = parameters.getDataStore();
-
-		List<SchemaTrigger> triggers = schema.getTriggers();
 
 		PreparedStatement pstm = null;
 		ResultSet rs = null;
@@ -112,7 +111,8 @@ public class MySqlJdbcMetadataUtil {
 				 * 4 action_statement,
 				 * 5 action_timing
 				 */
-				triggers.add(buildSchemaTrigger(rs, dataStore));
+				SchemaTrigger trigger = buildSchemaTrigger(rs, dataStore, schema);
+				dataStore.save(trigger);
 			}
 
 			logger.info("#loadTriggers has finished.");
@@ -131,21 +131,21 @@ public class MySqlJdbcMetadataUtil {
 		final Connection connection = parameters.getConnection();
 		final DataStore dataStore = parameters.getDataStore();
 
-		List<TableTriggerDependency> dependencies = schema.getTableTriggerDependencies();
+		List<TableTriggerDependency> dependencies = dataStore.loadTableTriggerDependencies(schema);
 
 		// Create shortcut cache
 		Map<String, SchemaTable> tables = new HashMap<String, SchemaTable>();
-		for (SchemaTable table : schema.getTables()) {
+		for (SchemaTable table : dataStore.loadTables(schema)) {
 			tables.put(table.getName(), table);
 		}
 
 		Map<String, SchemaView> views = new HashMap<String, SchemaView>();
-		for (SchemaView view : schema.getViews()) {
+		for (SchemaView view : dataStore.loadViews(schema)) {
 			views.put(view.getName(), view);
 		}
 
 		Map<String, SchemaTrigger> triggers = new HashMap<String, SchemaTrigger>();
-		for (SchemaTrigger trigger : schema.getTriggers()) {
+		for (SchemaTrigger trigger : dataStore.loadTriggers(schema)) {
 			triggers.put(trigger.getName(), trigger);
 		}
 
@@ -165,7 +165,10 @@ public class MySqlJdbcMetadataUtil {
 				 * From the SHOW_TRIGGERS javadoc:
 				 * 
 				 */
-				dependencies.add(buildTableTriggerDependency(rs, dataStore, tables, views, triggers));
+				TableTriggerDependency dependency = buildTableTriggerDependency(rs, dataStore, schema, tables, views,
+				        triggers);
+				dataStore.save(dependency);
+				dependencies.add(dependency);
 			}
 
 			logger.info("#loadTriggers has finished.");
@@ -178,10 +181,10 @@ public class MySqlJdbcMetadataUtil {
 		}
 	}
 
-	protected TableTriggerDependency buildTableTriggerDependency(ResultSet rs, DataStore dataStore,
+	protected TableTriggerDependency buildTableTriggerDependency(ResultSet rs, DataStore dataStore, Schema schema,
 	        Map<String, SchemaTable> tables, Map<String, SchemaView> views, Map<String, SchemaTrigger> triggers)
 	        throws SQLException {
-		TableTriggerDependency dependency = dataStore.createTableTriggerDependency();
+		TableTriggerDependency dependency = dataStore.createTableTriggerDependency(schema);
 		String triggerName = rs.getString("Trigger");
 		String tableName = rs.getString("Table");
 		dependency.setName(triggerName);

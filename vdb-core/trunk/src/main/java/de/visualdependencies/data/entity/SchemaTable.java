@@ -1,8 +1,6 @@
 package de.visualdependencies.data.entity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
@@ -13,13 +11,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.OptimisticLockType;
 
 @Entity
+@org.hibernate.annotations.Entity(optimisticLock = OptimisticLockType.VERSION)
 @Table(name = "tables")
 public class SchemaTable extends AbstractEntity<Long> {
 
@@ -29,24 +27,17 @@ public class SchemaTable extends AbstractEntity<Long> {
 	@GeneratedValue
 	private long id;
 
-	@ElementCollection
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn
+	private Schema schema;
+
+	@ElementCollection(fetch = FetchType.EAGER)
 	@JoinTable(name = "tables_data", joinColumns = @JoinColumn(name = "tableId"))
 	// @MapKeyEnumerated(EnumType.STRING)
 	@Column(name = "value")
 	private Map<String, String> data;
 
-	@OneToMany(fetch = FetchType.EAGER)
-	@Cascade(CascadeType.ALL)
-	private List<SchemaColumn> columns;
-
 	private String name;
-
-	public List<SchemaColumn> getColumns() {
-		if (columns == null) {
-			setColumns(new ArrayList<SchemaColumn>());
-		}
-		return columns;
-	}
 
 	public Map<String, String> getData() {
 		if (data == null) {
@@ -63,8 +54,8 @@ public class SchemaTable extends AbstractEntity<Long> {
 		return name;
 	}
 
-	public void setColumns(final List<SchemaColumn> columns) {
-		this.columns = columns;
+	public Schema getSchema() {
+		return schema;
 	}
 
 	public void setData(final Map<String, String> data) {
@@ -77,6 +68,10 @@ public class SchemaTable extends AbstractEntity<Long> {
 
 	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public void setSchema(final Schema schema) {
+		this.schema = schema;
 	}
 
 }

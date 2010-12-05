@@ -8,10 +8,13 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.DistinctRootEntityResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.visualdependencies.data.dao.GeneralDao;
 import de.visualdependencies.data.entity.AbstractEntity;
+import de.visualdependencies.data.entity.Schema;
 
 public abstract class AbstractGeneralDaoImpl<E extends AbstractEntity<? extends Serializable>> implements GeneralDao<E> {
 
@@ -63,8 +66,18 @@ public abstract class AbstractGeneralDaoImpl<E extends AbstractEntity<? extends 
 		final Criteria criteria = createCriteria();
 		criteria.addOrder(Order.asc("name"));
 
+		// If an entity has any mapped collection with eager loading, this will avoid multiple result tuples.
+		// See: https://forum.hibernate.org/viewtopic.php?f=25&t=988655
+		criteria.setResultTransformer(DistinctRootEntityResultTransformer.INSTANCE);
+
 		@SuppressWarnings("unchecked")
 		final List<E> list = criteria.list();
+		return list;
+	}
+
+	public List<E> list(final Schema schema) {
+		@SuppressWarnings("unchecked")
+		final List<E> list = createCriteria().add(Restrictions.eq("schema.id", schema.getId())).list();
 		return list;
 	}
 

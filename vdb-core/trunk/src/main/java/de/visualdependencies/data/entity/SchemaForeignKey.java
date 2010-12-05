@@ -6,13 +6,17 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OptimisticLockType;
+
 @Entity
+@org.hibernate.annotations.Entity(optimisticLock = OptimisticLockType.VERSION)
 @Table(name = "foreignkeys")
 public class SchemaForeignKey extends AbstractEntity<Long> {
 
@@ -25,7 +29,7 @@ public class SchemaForeignKey extends AbstractEntity<Long> {
 	@Column
 	private String name;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	@JoinTable(name = "foreignkeys_data", joinColumns = @JoinColumn(name = "foreignkeyId"))
 	// @MapKeyEnumerated(EnumType.STRING)
 	@Column(name = "value")
