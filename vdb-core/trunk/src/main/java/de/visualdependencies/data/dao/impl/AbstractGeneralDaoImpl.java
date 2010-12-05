@@ -42,7 +42,13 @@ public abstract class AbstractGeneralDaoImpl<E extends AbstractEntity<? extends 
 
 	protected Criteria createCriteria() {
 		final Session session = sessionFactory.getCurrentSession();
-		return session.createCriteria(getPersistentClass());
+		final Criteria criteria = session.createCriteria(getPersistentClass());
+
+		// If an entity has any mapped collection with eager loading, this will avoid multiple result tuples.
+		// See: https://forum.hibernate.org/viewtopic.php?f=25&t=988655
+		criteria.setResultTransformer(DistinctRootEntityResultTransformer.INSTANCE);
+
+		return criteria;
 	}
 
 	@Override
@@ -65,11 +71,6 @@ public abstract class AbstractGeneralDaoImpl<E extends AbstractEntity<? extends 
 	public List<E> list() {
 		final Criteria criteria = createCriteria();
 		criteria.addOrder(Order.asc("name"));
-
-		// If an entity has any mapped collection with eager loading, this will avoid multiple result tuples.
-		// See: https://forum.hibernate.org/viewtopic.php?f=25&t=988655
-		criteria.setResultTransformer(DistinctRootEntityResultTransformer.INSTANCE);
-
 		@SuppressWarnings("unchecked")
 		final List<E> list = criteria.list();
 		return list;
