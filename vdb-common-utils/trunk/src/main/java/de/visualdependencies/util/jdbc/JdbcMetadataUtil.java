@@ -15,9 +15,10 @@ import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
 
 import de.visualdependencies.data.entity.Schema;
-import de.visualdependencies.data.entity.SchemaColumn;
 import de.visualdependencies.data.entity.SchemaTable;
+import de.visualdependencies.data.entity.SchemaTableColumn;
 import de.visualdependencies.data.entity.SchemaView;
+import de.visualdependencies.data.entity.SchemaViewColumn;
 import de.visualdependencies.plugin.DataStore;
 import de.visualdependencies.plugin.helper.MetadataWorkerParameters;
 import de.visualdependencies.util.translator.ColumnDataTranslator;
@@ -54,7 +55,7 @@ final public class JdbcMetadataUtil {
 		Assert.notNull(parameters.getConnection(), "The metadata worker parameters must have a connection.");
 		Assert.notNull(parameters.getDataStore(), "The metadata worker parameters must have a datastore.");
 		Assert.notNull(parameters.getSchema(), "The metadata worker parameters must have a schema.");
-		Assert.notNull(parameters.getSchema().getConnection(),
+		Assert.notNull(parameters.getSchemaConnection(),
 		        "The metadata worker parameters must have a valid schema connection.");
 
 		return new JdbcMetadataUtil(parameters);
@@ -68,11 +69,25 @@ final public class JdbcMetadataUtil {
 
 	private JdbcMetadataUtil(final MetadataWorkerParameters parameters) {
 		this.parameters = parameters;
-		connectionDataTranslator = ConnectionDataTranslator.create(parameters.getSchema().getConnection());
+		connectionDataTranslator = ConnectionDataTranslator.create(parameters.getSchemaConnection());
 	}
 
-	protected SchemaColumn buildSchemaColumn(final ResultSet rs, final DataStore dataStore) throws SQLException {
-		final SchemaColumn column = dataStore.createSchemaColumn();
+	protected SchemaTable buildSchemaTable(final ResultSet rs, final DataStore dataStore, final Schema schema)
+	        throws SQLException {
+		final SchemaTable table = dataStore.createSchemaTable(schema);
+		table.setName(rs.getString(JDBC_TABLE_NAME));
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Table has been built: " + table.getName());
+		}
+
+		return table;
+	}
+
+	protected SchemaTableColumn buildSchemaTableColumn(final ResultSet rs, final DataStore dataStore,
+	        final SchemaTable table)
+	        throws SQLException {
+		final SchemaTableColumn column = dataStore.createSchemaTableColumn(table);
 		column.setName(rs.getString(JDBC_COLUMN_NAME));
 
 		final ColumnDataTranslator translator = ColumnDataTranslator.create(column);
@@ -85,19 +100,9 @@ final public class JdbcMetadataUtil {
 		return column;
 	}
 
-	protected SchemaTable buildSchemaTable(final ResultSet rs, final DataStore dataStore) throws SQLException {
-		final SchemaTable table = dataStore.createSchemaTable();
-		table.setName(rs.getString(JDBC_TABLE_NAME));
-
-		if (logger.isInfoEnabled()) {
-			logger.info("Table has been built: " + table.getName());
-		}
-
-		return table;
-	}
-
-	protected SchemaView buildSchemaView(final ResultSet rs, final DataStore dataStore) throws SQLException {
-		final SchemaView view = dataStore.createSchemaView();
+	protected SchemaView buildSchemaView(final ResultSet rs, final DataStore dataStore, final Schema schema)
+	        throws SQLException {
+		final SchemaView view = dataStore.createSchemaView(schema);
 		view.setName(rs.getString(JDBC_TABLE_NAME));
 
 		if (logger.isInfoEnabled()) {
@@ -105,6 +110,21 @@ final public class JdbcMetadataUtil {
 		}
 
 		return view;
+	}
+
+	protected SchemaViewColumn buildSchemaViewColumn(final ResultSet rs, final DataStore dataStore,
+	        final SchemaView view) throws SQLException {
+		final SchemaViewColumn column = dataStore.createSchemaViewColumn(view);
+		column.setName(rs.getString(JDBC_COLUMN_NAME));
+
+		final ColumnDataTranslator translator = ColumnDataTranslator.create(column);
+		translator.setDataType(rs.getInt(JDBC_DATA_TYPE));
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Column has been built: " + column.getName());
+		}
+
+		return column;
 	}
 
 	/**
@@ -121,15 +141,15 @@ final public class JdbcMetadataUtil {
 		// Build up internal shortcut cache.
 		final Map<String, SchemaTable> tables = new HashMap<String, SchemaTable>();
 		final Map<String, SchemaView> views = new HashMap<String, SchemaView>();
-
-		for (final SchemaTable table : schema.getTables()) {
+		for (final SchemaTable table : dataStore.loadTables(schema)) {
 			tables.put(table.getName(), table);
-			table.getColumns().clear();
 		}
-		for (final SchemaView view : schema.getViews()) {
+		for (final SchemaView view : dataStore.loadViews(schema)) {
 			views.put(view.getName(), view);
-			view.getColumns().clear();
 		}
+
+		final List<SchemaTableColumn> tableColumns = new ArrayList<SchemaTableColumn>();
+		final List<SchemaViewColumn> viewColumns = new ArrayList<SchemaViewColumn>();
 
 		ResultSet rs = null;
 		try {
@@ -195,9 +215,9 @@ final public class JdbcMetadataUtil {
 				final String columnName = rs.getString(JDBC_COLUMN_NAME);
 				final Integer columnType = rs.getInt(JDBC_DATA_TYPE);
 				if (tables.containsKey(tableName)) {
-					tables.get(tableName).getColumns().add(buildSchemaColumn(rs, dataStore));
+					tableColumns.add(buildSchemaTableColumn(rs, dataStore, tables.get(tableName)));
 				} else if (views.containsKey(tableName)) {
-					views.get(tableName).getColumns().add(buildSchemaColumn(rs, dataStore));
+					viewColumns.add(buildSchemaViewColumn(rs, dataStore, views.get(tableName)));
 				} else {
 					if (logger.isDebugEnabled()) {
 						logger.debug(String.format(
@@ -213,6 +233,16 @@ final public class JdbcMetadataUtil {
 			logger.error("DatabaseMetadata#getColumns could not be finished.", e);
 		} finally {
 			JdbcUtils.closeResultSet(rs);
+		}
+
+		logger.info("Saving table columns...");
+		for (final SchemaTableColumn column : tableColumns) {
+			dataStore.save(column);
+		}
+
+		logger.info("Saving view columns...");
+		for (final SchemaViewColumn column : viewColumns) {
+			dataStore.save(column);
 		}
 	}
 
@@ -267,9 +297,13 @@ final public class JdbcMetadataUtil {
 				final String tableName = rs.getString(JDBC_TABLE_NAME);
 				final String tableType = rs.getString(JDBC_TABLE_TYPE);
 				if (JDBC_TABLE.equals(tableType)) {
-					tables.add(buildSchemaTable(rs, dataStore));
+					final SchemaTable table = buildSchemaTable(rs, dataStore, schema);
+					dataStore.save(table);
+					tables.add(table);
 				} else if (JDBC_VIEW.equals(tableType)) {
-					views.add(buildSchemaView(rs, dataStore));
+					final SchemaView view = buildSchemaView(rs, dataStore, schema);
+					dataStore.save(view);
+					views.add(view);
 				} else {
 					if (logger.isDebugEnabled()) {
 						logger.debug(String.format("Table object [name=\"%s\", type=\"%s\"] will be ignored.",
@@ -277,9 +311,6 @@ final public class JdbcMetadataUtil {
 					}
 				}
 			}
-
-			schema.setTables(tables);
-			schema.setViews(views);
 
 			logger.info("DatabaseMetadata#getTables has finished.");
 

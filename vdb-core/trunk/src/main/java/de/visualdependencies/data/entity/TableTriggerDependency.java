@@ -6,14 +6,19 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OptimisticLockType;
+
 @Entity
+@org.hibernate.annotations.Entity(optimisticLock = OptimisticLockType.VERSION)
 @Table(name = "table_trigger_dependencies")
 public class TableTriggerDependency extends AbstractEntity<Long> {
 
@@ -26,13 +31,19 @@ public class TableTriggerDependency extends AbstractEntity<Long> {
 	@Column
 	private String name;
 
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn
+	private Schema schema;
+
 	@OneToOne
+	@JoinColumn
 	private SchemaTable table;
 
 	@OneToOne
+	@JoinColumn
 	private SchemaTrigger trigger;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	@JoinTable(name = "table_trigger_dependencies_data", joinColumns = @JoinColumn(name = "dependencyId"))
 	// @MapKeyEnumerated(EnumType.STRING)
 	@Column(name = "value")
@@ -53,6 +64,10 @@ public class TableTriggerDependency extends AbstractEntity<Long> {
 		return name;
 	}
 
+	public Schema getSchema() {
+		return schema;
+	}
+
 	public SchemaTable getTable() {
 		return table;
 	}
@@ -71,6 +86,10 @@ public class TableTriggerDependency extends AbstractEntity<Long> {
 
 	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public void setSchema(final Schema schema) {
+		this.schema = schema;
 	}
 
 	public void setTable(final SchemaTable table) {

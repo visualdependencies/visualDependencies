@@ -2,8 +2,10 @@ package de.visualdependencies.data.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
+@MappedSuperclass
 public abstract class AbstractEntity<T extends Serializable> implements Serializable {
 
 	private static final long serialVersionUID = 7673954552151940556L;
