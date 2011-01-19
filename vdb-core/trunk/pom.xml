@@ -23,6 +23,7 @@
 	<groupId>de.visualdependencies</groupId>
 	<artifactId>vdb-core</artifactId>
 	<name>visualDependencies Core</name>
+  <description>This is a central core of visualDependencies. It provides the actual data model, basic controller utilities and the plugin architecture.</description>
 	<version>1.0.0-SNAPSHOT</version>
 	<parent>
 		<groupId>de.visualdependencies</groupId>
